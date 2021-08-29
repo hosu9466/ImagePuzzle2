@@ -4,11 +4,16 @@ const blocksQuery = document.querySelector('.blocks');
 const resultQuery = document.querySelector('.result');
 let time = 0;
 let intervalID = NaN;
+let dragStartBlock = NaN;
+let dragEndBlock = NaN;
 
 init();
 
+//functions
+
 function init(){
     //make image blocks
+    resultQuery.style.display = 'none';
     for(let i=0; i<16; i++){
         const li = document.createElement('li');
         li.className = `image${i}`;
@@ -22,12 +27,14 @@ function init(){
 function ClickStartButton(){
     shuffle();
     time = 0;
-    if(isNaN(intervalID)){
-        intervalID = setInterval(()=>{
-            time++;
-            timeQuery.innerText = `${time}초`;
-        },1000)
+    timeQuery.innerText = `${time}초`;
+    if(!isNaN(intervalID)){
+        clearInterval(intervalID);
     }
+    intervalID = setInterval(()=>{
+        time++;
+        timeQuery.innerText = `${time}초`;
+    },1000)
 }
 
 function shuffle(){
@@ -46,11 +53,35 @@ function checkResult(){
     }
     if(flag){
         resultQuery.innerText = "정답입니다!";
+        clearInterval(intervalID);
+        resultQuery.style.display = 'block';
     } else{
         resultQuery.innerText = '아직 정답이 아닙니다....';
     }
 }
 
+//drag event handler
 
-
+document.addEventListener("dragstart",function(event){
+    dragStartBlock = event.target;
+}, false) 
+document.addEventListener("dragend",function(event){
+    let startNextSibling = event.target.nextSibling;
+    console.log(startNextSibling,dragEndBlock,dragStartBlock);
+    blocksQuery.insertBefore(dragStartBlock,dragEndBlock);
+    if(startNextSibling===dragEndBlock){
+        startNextSibling = dragStartBlock;
+    }
+    if(startNextSibling){
+        blocksQuery.insertBefore(dragEndBlock,startNextSibling);
+    }
+    else{
+        blocksQuery.appendChild(dragEndBlock);
+    }
+    checkResult();
+}, false)
+document.addEventListener("dragleave",function(event){
+    event.preventDefault();
+    dragEndBlock = event.target;
+}, false) 
 
